@@ -2,7 +2,7 @@
     "name": "select-between",
     "displayName": "Select Between",
     "description": "Select between brackets or quotes.",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "publisher": "Shazbot",
     "engines": {
         "vscode": "^1.28.0"
@@ -15,10 +15,12 @@
     ],
     "main": "./out/extension",
     "contributes": {
-        "commands": [{
-            "command": "extension.selectBetween",
-            "title": "Select Between"
-        }]
+        "commands": [
+            {
+                "command": "extension.selectBetween",
+                "title": "Select Between"
+            }
+        ]
     },
     "scripts": {
         "vscode:prepublish": "npm run compile",
