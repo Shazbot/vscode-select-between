@@ -2,7 +2,7 @@
     "name": "select-between",
     "displayName": "select-between",
     "description": "Select between brackets or quotes.",
-    "version": "0.0.1",
+    "version": "0.1.0",
     "publisher": "Shazbot",
     "engines": {
         "vscode": "^1.28.0"
@@ -38,5 +38,9 @@
         "@types/escape-string-regexp": "^1.0.0",
         "balanced-match": "^1.0.0",
         "escape-string-regexp": "^1.0.5"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/Shazbot/vscode-select-between.git"
     }
 }
