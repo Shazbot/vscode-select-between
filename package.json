@@ -1,6 +1,6 @@
 {
     "name": "select-between",
-    "displayName": "select-between",
+    "displayName": "Select Between",
     "description": "Select between brackets or quotes.",
     "version": "0.1.0",
     "publisher": "Shazbot",
