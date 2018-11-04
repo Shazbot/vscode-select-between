@@ -11,16 +11,14 @@
         "Other"
     ],
     "activationEvents": [
-        "onCommand:extension.sayHello"
+        "onCommand:extension.selectBetween"
     ],
     "main": "./out/extension",
     "contributes": {
-        "commands": [
-            {
-                "command": "extension.sayHello",
-                "title": "Hello World"
-            }
-        ]
+        "commands": [{
+            "command": "extension.selectBetween",
+            "title": "Select Between"
+        }]
     },
     "scripts": {
         "vscode:prepublish": "npm run compile",
@@ -38,6 +36,7 @@
     },
     "dependencies": {
         "@types/escape-string-regexp": "^1.0.0",
+        "balanced-match": "^1.0.0",
         "escape-string-regexp": "^1.0.5"
     }
 }

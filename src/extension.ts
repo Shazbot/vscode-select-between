@@ -1,8 +1,9 @@
 "use strict";
 import * as vscode from "vscode";
 import * as escapeStringRegexp from "escape-string-regexp";
-import { Selection, Position } from "vscode";
 import { InlineInput } from "./inline-input";
+import { Selection, Position } from "vscode";
+var balanced = require("balanced-match");
 
 function findNextMatch(editor: vscode.TextEditor, input: string, numParentBrackets: number) {
   let lastIndex: number | null = null;
@@ -96,8 +97,64 @@ function findPrevMatch(editor: vscode.TextEditor, input: string, numParentBracke
   return null;
 }
 
+type hitMatch = { startPos: Position; endPos: Position; fromBottomCount: number } | null;
+
+function getHit(
+  findPrev: string,
+  findNext: string,
+  text: string,
+  hitLengthOriginal: number,
+  offsetOriginal: number,
+  editor: vscode.TextEditor,
+  depth: number,
+  maxDepth: number
+): hitMatch {
+  let hit;
+  let hitLength = hitLengthOriginal;
+  let active = editor.selection.active;
+
+  let offset = 0;
+  if (offsetOriginal) {
+    offset = offsetOriginal;
+  }
+
+  while ((hit = balanced(findPrev, findNext, text))) {
+    offset += 1;
+    let startPos = editor.document.positionAt(hit.start + hitLength + offset);
+    let endPos = editor.document.positionAt(hit.end + hitLength + offset);
+    if (active.isAfterOrEqual(startPos) && active.isBeforeOrEqual(endPos.translate(0, -1))) {
+      let bodyMatch = getHit(
+        findPrev,
+        findNext,
+        hit.body,
+        hit.pre.length + hitLength,
+        offset,
+        editor,
+        depth + 1,
+        maxDepth
+      );
+
+      let fromBottomCount = 1;
+      if (bodyMatch) {
+        if (bodyMatch.fromBottomCount >= maxDepth) {
+          return bodyMatch;
+        }
+
+        fromBottomCount += 1;
+      }
+
+      return { startPos: startPos, endPos: endPos, fromBottomCount: fromBottomCount };
+    }
+
+    hitLength += hit.end;
+    text = hit.post;
+  }
+
+  return null;
+}
+
 export function activate(context: vscode.ExtensionContext) {
-  let disposable = vscode.commands.registerCommand("extension.sayHello", () => {
+  let disposable = vscode.commands.registerCommand("extension.selectBetween", () => {
     let editor = vscode.window.activeTextEditor!;
 
     if (!editor) {
@@ -130,7 +187,7 @@ export function activate(context: vscode.ExtensionContext) {
         let findPrev = value;
         let findNext = value;
 
-        if (!value.search(escapeStringRegexp(`"'[](){}`))) {
+        if (!value.search(escapeStringRegexp(`"'[](){}<>`))) {
           return;
         }
 
@@ -146,14 +203,29 @@ export function activate(context: vscode.ExtensionContext) {
           findPrev = "[";
           findNext = "]";
         }
+        if (/[<>]/.test(value)) {
+          findPrev = "<";
+          findNext = ">";
+        }
 
-        let prevMatch = findPrevMatch(editor, findPrev, numParentBrackets);
-        let nextMatch = findNextMatch(editor, findNext, numParentBrackets);
-        if (prevMatch && nextMatch) {
-          editor!.selection = new Selection(
-            new Position(prevMatch.lineNum, prevMatch.charIndex),
-            new Position(nextMatch.lineNum, nextMatch.charIndex - 1)
-          );
+        let text = editor.document.getText();
+
+        if (value === `'` || value === `"`) {
+          let prevMatch = findPrevMatch(editor, findPrev, numParentBrackets);
+          let nextMatch = findNextMatch(editor, findNext, numParentBrackets);
+          if (prevMatch && nextMatch) {
+            editor!.selection = new Selection(
+              new Position(prevMatch.lineNum, prevMatch.charIndex),
+              new Position(nextMatch.lineNum, nextMatch.charIndex - 1)
+            );
+          }
+        } else {
+          let hit = <hitMatch>getHit(findPrev, findNext, text, 0, 0, editor, 1, numParentBrackets);
+          if (hit) {
+            let lineDelta = 0;
+            let charDelta = -1;
+            editor!.selection = new Selection(hit.startPos, hit.endPos.translate(lineDelta, charDelta));
+          }
         }
       })
       .then(() => {})
