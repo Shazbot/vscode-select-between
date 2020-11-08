@@ -5,9 +5,14 @@ import { InlineInput } from "./inline-input";
 import { Selection, Position } from "vscode";
 var balanced = require("balanced-match");
 
-function findNextMatch(editor: vscode.TextEditor, input: string, numParentBrackets: number) {
+function findNextMatch(
+  editor: vscode.TextEditor,
+  selection: vscode.Selection,
+  input: string,
+  numParentBrackets: number
+) {
   let lastIndex: number | null = null;
-  let currentLineNum = editor.selection.active.line;
+  let currentLineNum = selection.active.line;
   let lineNum: number;
   for (lineNum = currentLineNum; lineNum <= editor.document.lineCount; lineNum++) {
     lastIndex = null;
@@ -17,7 +22,7 @@ function findNextMatch(editor: vscode.TextEditor, input: string, numParentBracke
 
     while (regex.exec(lineText) !== null) {
       if (lineNum === currentLineNum) {
-        if (regex.lastIndex <= editor.selection.active.character) {
+        if (regex.lastIndex <= selection.active.character) {
           continue;
         }
       }
@@ -48,9 +53,14 @@ function findNextMatch(editor: vscode.TextEditor, input: string, numParentBracke
   return null;
 }
 
-function findPrevMatch(editor: vscode.TextEditor, input: string, numParentBrackets: number) {
+function findPrevMatch(
+  editor: vscode.TextEditor,
+  selection: vscode.Selection,
+  input: string,
+  numParentBrackets: number
+) {
   let lastIndex: number | null = null;
-  let currentLineNum = editor.selection.active.line;
+  let currentLineNum = selection.active.line;
   let lineNum: number;
   let lineLength = 0;
   for (lineNum = currentLineNum; lineNum >= 0; lineNum--) {
@@ -63,7 +73,7 @@ function findPrevMatch(editor: vscode.TextEditor, input: string, numParentBracke
 
     while (regex.exec(lineText) !== null) {
       if (lineNum === currentLineNum) {
-        if (regex.lastIndex <= lineLength - editor.selection.active.character) {
+        if (regex.lastIndex <= lineLength - selection.active.character) {
           continue;
         }
       }
@@ -209,23 +219,27 @@ export function activate(context: vscode.ExtensionContext) {
 
         let text = editor.document.getText();
 
-        if (value === `'` || value === `"`) {
-          let prevMatch = findPrevMatch(editor, findPrev, numParentBrackets);
-          let nextMatch = findNextMatch(editor, findNext, numParentBrackets);
-          if (prevMatch && nextMatch) {
-            editor!.selection = new Selection(
-              new Position(prevMatch.lineNum, prevMatch.charIndex),
-              new Position(nextMatch.lineNum, nextMatch.charIndex - 1)
-            );
+        editor.selections.forEach((selection, i) => {
+          if (value === `'` || value === `"`) {
+            let nextMatch = findNextMatch(editor, selection, findNext, numParentBrackets);
+            let prevMatch = findPrevMatch(editor, selection, findPrev, numParentBrackets);
+            if (prevMatch && nextMatch) {
+              editor!.selections[i] = new Selection(
+                new Position(prevMatch.lineNum, prevMatch.charIndex),
+                new Position(nextMatch.lineNum, nextMatch.charIndex - 1)
+              );
+            }
+          } else {
+            let hit = <hitMatch>getHit(findPrev, findNext, text, 0, 0, editor, 1, numParentBrackets);
+            if (hit) {
+              let lineDelta = 0;
+              let charDelta = -1;
+              editor!.selections[i] = new Selection(hit.startPos, hit.endPos.translate(lineDelta, charDelta));
+            }
           }
-        } else {
-          let hit = <hitMatch>getHit(findPrev, findNext, text, 0, 0, editor, 1, numParentBrackets);
-          if (hit) {
-            let lineDelta = 0;
-            let charDelta = -1;
-            editor!.selection = new Selection(hit.startPos, hit.endPos.translate(lineDelta, charDelta));
-          }
-        }
+        });
+
+        editor!.selections = editor!.selections;
       })
       .then(() => {})
       .catch(() => {});
