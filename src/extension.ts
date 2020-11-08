@@ -41,7 +41,7 @@ function findNextMatch(editor: vscode.TextEditor, input: string, numParentBracke
   if (lastIndex) {
     return {
       lineNum: lineNum,
-      charIndex: lastIndex
+      charIndex: lastIndex,
     };
   }
 
@@ -59,10 +59,7 @@ function findPrevMatch(editor: vscode.TextEditor, input: string, numParentBracke
     lineLength = editor.document.lineAt(lineNum).range.end.character;
     let regex = new RegExp(escapeStringRegexp(input), "g");
 
-    lineText = lineText
-      .split("")
-      .reverse()
-      .join("");
+    lineText = lineText.split("").reverse().join("");
 
     while (regex.exec(lineText) !== null) {
       if (lineNum === currentLineNum) {
@@ -90,7 +87,7 @@ function findPrevMatch(editor: vscode.TextEditor, input: string, numParentBracke
   if (lastIndex) {
     return {
       lineNum: lineNum,
-      charIndex: lineLength - lastIndex + 1
+      charIndex: lineLength - lastIndex + 1,
     };
   }
 
@@ -164,7 +161,7 @@ export function activate(context: vscode.ExtensionContext) {
     let numParentBrackets: number = 1;
 
     new InlineInput()
-      .show(editor, v => v)
+      .show(editor, (v) => v)
       .then(async (value: string) => {
         if (!value) {
           return;
@@ -174,9 +171,11 @@ export function activate(context: vscode.ExtensionContext) {
         if (inputAsNumber) {
           numParentBrackets = inputAsNumber;
           value = String(
-            await new InlineInput().show(editor!, v => v).then((value: string) => {
-              return value;
-            })
+            await new InlineInput()
+              .show(editor!, (v) => v)
+              .then((value: string) => {
+                return value;
+              })
           );
 
           if (!value) {
