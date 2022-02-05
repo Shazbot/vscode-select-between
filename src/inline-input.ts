@@ -23,7 +23,7 @@ export class InlineInput {
   private input: Input | undefined;
 
   constructor() {
-    this.registerTextEditorCommand("extension.aceJump.input.stop", this.cancel);
+    this.registerTextEditorCommand("extension.selectBetween.input.stop", this.cancel);
   }
 
   show = (editor: vscode.TextEditor, validateInput: (text: string) => string): Promise<string> => {
@@ -33,7 +33,7 @@ export class InlineInput {
       this.input = new Input({
         validateInput: validateInput,
         resolve: resolve,
-        reject: reject
+        reject: reject,
       });
 
       vscode.window.onDidChangeActiveTextEditor(() => {
@@ -44,22 +44,22 @@ export class InlineInput {
     this.registerCommand("type", this.onType);
 
     return promise;
-  }
+  };
 
   private dispose = () => {
-    this.subscriptions.forEach(d => d.dispose());
-  }
+    this.subscriptions.forEach((d) => d.dispose());
+  };
 
   private registerTextEditorCommand = (
     commandId: string,
     run: (editor: vscode.TextEditor, edit: vscode.TextEditorEdit, ...args: any[]) => void
   ): void => {
     this.subscriptions.push(vscode.commands.registerTextEditorCommand(commandId, run));
-  }
+  };
 
   private registerCommand = (commandId: string, run: (...args: any[]) => void): void => {
     this.subscriptions.push(vscode.commands.registerCommand(commandId, run));
-  }
+  };
 
   private onType = (event: { text: string }) => {
     const editor = vscode.window.activeTextEditor;
@@ -71,7 +71,7 @@ export class InlineInput {
     } else {
       vscode.commands.executeCommand("default:type", event);
     }
-  }
+  };
 
   private cancel = (editor: vscode.TextEditor) => {
     if (this.input) {
@@ -79,7 +79,7 @@ export class InlineInput {
     }
     this.dispose();
     this.setContext(false);
-  }
+  };
 
   private complete = (editor: vscode.TextEditor) => {
     if (this.input) {
@@ -87,9 +87,9 @@ export class InlineInput {
     }
     this.dispose();
     this.setContext(false);
-  }
+  };
 
   private setContext(value: boolean) {
-    vscode.commands.executeCommand("setContext", "aceJumpInput", value);
+    vscode.commands.executeCommand("setContext", "selectBetweenInput", value);
   }
 }

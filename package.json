@@ -2,7 +2,7 @@
   "name": "select-between",
   "displayName": "Select Between",
   "description": "Select between brackets or quotes.",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "publisher": "Shazbot",
   "engines": {
     "vscode": "^1.28.0"
@@ -30,15 +30,15 @@
     "test": "npm run compile && node ./node_modules/vscode/bin/test"
   },
   "devDependencies": {
-    "typescript": "^3.1.5",
-    "vscode": "^1.1.21",
-    "tslint": "^5.8.0",
-    "@types/node": "^10.12.1",
-    "@types/mocha": "^5.2.5"
+    "@types/mocha": "^5.2.7",
+    "@types/node": "^10.17.60",
+    "tslint": "^5.20.1",
+    "typescript": "^3.9.10",
+    "vscode": "^1.1.37"
   },
   "dependencies": {
     "@types/escape-string-regexp": "^1.0.0",
-    "balanced-match": "^1.0.0",
+    "balanced-match": "^1.0.2",
     "escape-string-regexp": "^1.0.5"
   },
   "repository": {

@@ -1,5 +1,9 @@
 # Change Log
 
+## [0.2.1]
+
+- Bugfix
+
 ## [0.2.0]
 
 - Added multi-cursor support
